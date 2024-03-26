@@ -27,6 +27,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import MyButton from './ui/MyButton.vue'
 
 export default {
@@ -38,11 +39,6 @@ export default {
 
   data() {
     return {
-      calculatorColors: {
-        primary: '#2E2F38',
-        secondary: '#4E505F',
-        tertiary: '#4B5EFC'
-      },
       countPreview: '',
       countResult: '',
       operationSymbols: ['+', '-', 'x', '*', '/', '÷', '%'],
@@ -53,35 +49,30 @@ export default {
   computed: {
     dataButtons() {
       return [
-        { text: 'C', color: this.calculatorColors.secondary},
-        { text: '%', color: this.calculatorColors.secondary},
-        { text: '÷', color: this.calculatorColors.tertiary},
-        { text: '7', color: this.calculatorColors.primary},
-        { text: '8', color: this.calculatorColors.primary},
-        { text: '9', color: this.calculatorColors.primary},
-        { text: 'x', color: this.calculatorColors.tertiary},
-        { text: '4', color: this.calculatorColors.primary},
-        { text: '5', color: this.calculatorColors.primary},
-        { text: '6', color: this.calculatorColors.primary},
-        { text: '-', color: this.calculatorColors.tertiary},
-        { text: '1', color: this.calculatorColors.primary},
-        { text: '2', color: this.calculatorColors.primary},
-        { text: '3', color: this.calculatorColors.primary},
-        { text: '+', color: this.calculatorColors.tertiary},
-        { text: '.', color: this.calculatorColors.primary},
-        { text: '0', color: this.calculatorColors.primary},
-        { image: 'delete.png', color: this.calculatorColors.primary},
-        { text: '=', color: this.calculatorColors.tertiary}
+        { text: 'C', color: this.$calcSecondaryColor},
+        { text: '%', color: this.$calcSecondaryColor},
+        { text: '÷', color: this.$calcTertiaryColor},
+        { text: '7', color: this.$calcPrimaryColor},
+        { text: '8', color: this.$calcPrimaryColor},
+        { text: '9', color: this.$calcPrimaryColor},
+        { text: 'x', color: this.$calcTertiaryColor},
+        { text: '4', color: this.$calcPrimaryColor},
+        { text: '5', color: this.$calcPrimaryColor},
+        { text: '6', color: this.$calcPrimaryColor},
+        { text: '-', color: this.$calcTertiaryColor},
+        { text: '1', color: this.$calcPrimaryColor},
+        { text: '2', color: this.$calcPrimaryColor},
+        { text: '3', color: this.$calcPrimaryColor},
+        { text: '+', color: this.$calcTertiaryColor},
+        { text: '.', color: this.$calcPrimaryColor},
+        { text: '0', color: this.$calcPrimaryColor},
+        { image: 'delete.png', color: this.$calcPrimaryColor},
+        { text: '=', color: this.$calcTertiaryColor}
       ]
-    }
-  },
+    },
 
-  watch: {
-    countPreview(expression) {
-      if (expression.at(-1) === '=') {
-        console.log('fim do calculo');
-      }
-
+    allSymbols() {
+      return this.operationSymbols.concat(this.othersSymbols)
     }
   },
 
@@ -94,32 +85,39 @@ export default {
 
     //   this.calculate()
     // },
-    
     captureClickOnScreen($event) {
-      const key = $event.target.innerText
-      const allSymbols = this.operationSymbols.concat(this.othersSymbols)
+      const keyClicked = $event.target.innerText
+      if (this.cleanCalculator(keyClicked)) return
+
+      if (this.breakFirstSymbol(keyClicked)) return
       
-      if (allSymbols.includes(key) && this.countPreview.length < 1) {
-        return
-      }
-      
-      if (key === 'C') {
-        this.countPreview = ''
-        return
-      }
+      if (this.breakLastSymbol(this.countResult.at(-1))) return
 
-      if (this.countPreview.at(-1) === '=') {
-        return
+      this.countResult += keyClicked
+
+      if (this.operationSymbols.includes(keyClicked)) {
+        const operationSymbol = keyClicked
+        const symbolPosition = this.countResult.indexOf(keyClicked)
+        console.log(operationSymbol, symbolPosition)
+
+        // this.countPreview = this.countResult
       }
-
-      const buttonClicked = $event.target.innerText
-      this.countPreview += buttonClicked
-
-      this.calculate()
     },
 
-    calculate() {
-      // console.log('countPreview', this.countPreview)
+    cleanCalculator(key) {
+      if (key === 'C') {
+        this.countResult = ''
+        this.countPreview = ''
+        return true
+      }
+    },
+
+    breakFirstSymbol(key) {
+      return this.allSymbols.includes(key) && this.countResult.length < 1
+    },
+
+    breakLastSymbol(lastKey) {
+      return lastKey === this.othersSymbols[1]
     }
   }
 }
