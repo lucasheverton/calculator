@@ -42,7 +42,11 @@ export default {
       countPreview: '',
       countResult: '',
       operationSymbols: ['+', '-', 'x', '*', '/', '÷', '%'],
-      othersSymbols: ['.', '=']
+      othersSymbols: ['.', '='],
+      expressionPartOne: null,
+      symbolOperation: null,
+      expressionPartTwo: null,
+      readyToCalculate: false
     }
   },
 
@@ -73,6 +77,10 @@ export default {
 
     allSymbols() {
       return this.operationSymbols.concat(this.othersSymbols)
+    },
+
+    calculator() {
+      return this.countResult = eval(this.expressionPartOne + this.symbolOperation + this.expressionPartTwo)
     }
   },
 
@@ -91,23 +99,37 @@ export default {
 
       if (this.breakFirstSymbol(keyClicked)) return
       
-      if (this.breakLastSymbol(this.countResult.at(-1))) return
+      if (this.breakLastSymbol(this.countResult?.at(-1))) return
 
       this.countResult += keyClicked
 
       if (this.operationSymbols.includes(keyClicked)) {
-        const operationSymbol = keyClicked
-        const symbolPosition = this.countResult.indexOf(keyClicked)
-        console.log(operationSymbol, symbolPosition)
+        const symbol = keyClicked
+        // const symbolPosition = this.countResult.indexOf(keyClicked)
 
-        // this.countPreview = this.countResult
+        this.expressionPartOne = Number(this.countResult.slice(0, -1))
+        this.symbolOperation = symbol
+
+        this.countPreview = this.countResult
+        this.countResult = ''
       }
+
+      if (this.othersSymbols[1] === keyClicked) {
+        this.expressionPartTwo = Number(this.countResult.slice(0, -1))
+        this.countPreview += this.countResult
+        this.countResult = ''
+        this.calculator
+      }
+
     },
 
     cleanCalculator(key) {
       if (key === 'C') {
         this.countResult = ''
         this.countPreview = ''
+        this.expressionPartOne = null
+        this.symbolOperation = null
+        this.expressionPartTwo = null
         return true
       }
     },
@@ -118,7 +140,7 @@ export default {
 
     breakLastSymbol(lastKey) {
       return lastKey === this.othersSymbols[1]
-    }
+    },
   }
 }
 </script>
