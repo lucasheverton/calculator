@@ -17,8 +17,8 @@
           :color="chars.color"
           :text="chars.text"
           :image="chars.image"
-          :class="{ 'button-1': chars.text === 'C' }"
-          @click="captureClickOnScreen($event)"
+          :class="{ 'bigger-button': chars.bigger }"
+          @click="captureClickOnScreen(chars.action)"
         >
         </MyButton>        
       </div>
@@ -53,25 +53,24 @@ export default {
   computed: {
     dataButtons() {
       return [
-        { text: 'C', color: this.$calcSecondaryColor},
-        { text: '%', color: this.$calcSecondaryColor},
-        { text: '÷', color: this.$calcTertiaryColor},
-        { text: '7', color: this.$calcPrimaryColor},
-        { text: '8', color: this.$calcPrimaryColor},
-        { text: '9', color: this.$calcPrimaryColor},
-        { text: 'x', color: this.$calcTertiaryColor},
-        { text: '4', color: this.$calcPrimaryColor},
-        { text: '5', color: this.$calcPrimaryColor},
-        { text: '6', color: this.$calcPrimaryColor},
-        { text: '-', color: this.$calcTertiaryColor},
-        { text: '1', color: this.$calcPrimaryColor},
-        { text: '2', color: this.$calcPrimaryColor},
-        { text: '3', color: this.$calcPrimaryColor},
-        { text: '+', color: this.$calcTertiaryColor},
-        { text: '.', color: this.$calcPrimaryColor},
-        { text: '0', color: this.$calcPrimaryColor},
-        { image: 'delete.png', color: this.$calcPrimaryColor},
-        { text: '=', color: this.$calcTertiaryColor}
+        { text: 'C', color: this.$calcSecondaryColor, action: 'deleteAll', bigger: true, },
+        { image: 'delete.png', color: this.$calcPrimaryColor, action: 'deleteLast' },
+        { text: '÷', color: this.$calcTertiaryColor, action: '/' },
+        { text: '7', color: this.$calcPrimaryColor, action: '7' },
+        { text: '8', color: this.$calcPrimaryColor, action: '8' },
+        { text: '9', color: this.$calcPrimaryColor, action: '9' },
+        { text: 'x', color: this.$calcTertiaryColor, action: '*' },
+        { text: '4', color: this.$calcPrimaryColor, action: '4' },
+        { text: '5', color: this.$calcPrimaryColor, action: '5' },
+        { text: '6', color: this.$calcPrimaryColor, action: '6' },
+        { text: '-', color: this.$calcTertiaryColor, action: '-' },
+        { text: '1', color: this.$calcPrimaryColor, action: '1' },
+        { text: '2', color: this.$calcPrimaryColor, action: '2' },
+        { text: '3', color: this.$calcPrimaryColor, action: '3' },
+        { text: '+', color: this.$calcTertiaryColor, action: '+' },
+        { text: '.', color: this.$calcPrimaryColor, action: '.' },
+        { text: '0', color: this.$calcPrimaryColor, action: '0', bigger: true },
+        { text: '=', color: this.$calcTertiaryColor, action: '=' }
       ]
     },
 
@@ -93,38 +92,32 @@ export default {
 
     //   this.calculate()
     // },
-    captureClickOnScreen($event) {
-      const keyClicked = $event.target.innerText
-      if (this.cleanCalculator(keyClicked)) return
+    captureClickOnScreen(keyClicked) {
+      if (this.cleanAllCalculator(keyClicked)) return
 
       if (this.breakFirstSymbol(keyClicked)) return
       
-      if (this.breakLastSymbol(this.countResult?.at(-1))) return
+      if (this.countResult?.length && this.breakLastSymbol(this.countResult.at(-1))) return
+
+      if (keyClicked === 'deleteLast') {
+        this.countResult = this.countResult.slice(0, -1)
+        keyClicked = ''
+      }
 
       this.countResult += keyClicked
 
       if (this.operationSymbols.includes(keyClicked)) {
-        const symbol = keyClicked
-        // const symbolPosition = this.countResult.indexOf(keyClicked)
-
-        this.expressionPartOne = Number(this.countResult.slice(0, -1))
-        this.symbolOperation = symbol
-
-        this.countPreview = this.countResult
-        this.countResult = ''
+        this.calculateExpressionPartOne(keyClicked)
       }
 
       if (this.othersSymbols[1] === keyClicked) {
-        this.expressionPartTwo = Number(this.countResult.slice(0, -1))
-        this.countPreview += this.countResult
-        this.countResult = ''
-        this.calculator
+        this.calculateExpressionPartTwo()
       }
 
     },
 
-    cleanCalculator(key) {
-      if (key === 'C') {
+    cleanAllCalculator(key) {
+      if (key === 'deleteAll') {
         this.countResult = ''
         this.countPreview = ''
         this.expressionPartOne = null
@@ -132,6 +125,23 @@ export default {
         this.expressionPartTwo = null
         return true
       }
+    },
+
+    calculateExpressionPartOne(keyClicked ) {
+      const symbol = keyClicked
+
+      this.expressionPartOne = Number(this.countResult.slice(0, -1))
+      this.symbolOperation = symbol
+
+      this.countPreview = this.countResult
+      this.countResult = ''
+    },
+
+    calculateExpressionPartTwo() {
+      this.expressionPartTwo = Number(this.countResult.slice(0, -1))
+      this.countPreview += this.countResult
+      this.countResult = ''
+      this.calculator
     },
 
     breakFirstSymbol(key) {
@@ -188,7 +198,7 @@ export default {
         justify-items: center;
         gap: 16px 0;
 
-        .button-1 {
+        .bigger-button {
           grid-column: span 2;
           width: 180px;
         }
