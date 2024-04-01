@@ -6,8 +6,13 @@
       @keydown="captureKeyOnKeyBoard"
     >
       <div class="box-result">
-        <span class="hint">{{ countPreview }}</span>
-        <div class="number-calc">{{ countResult }}</div>
+        <span class="preview">{{ countPreview }}</span>
+        <div 
+          class="number-calc"
+          :class="{ 'decrease-size-numbers': countResultLength }"
+        >
+          {{ countResult || '0' }}
+        </div>
       </div>
       
       <div class="box-buttons">
@@ -41,12 +46,13 @@ export default {
     return {
       countPreview: '',
       countResult: '',
-      operationSymbols: ['+', '-', 'x', '*', '/', '÷', '%'],
+      operationSymbols: ['+', '-', '*', '/'],
       othersSymbols: ['.', '='],
       expressionPartOne: null,
       symbolOperation: null,
       expressionPartTwo: null,
-      readyToCalculate: false
+      readyToCalculate: false,
+      maxNumberLimit: 10
     }
   },
 
@@ -80,6 +86,23 @@ export default {
 
     calculator() {
       return this.countResult = eval(this.expressionPartOne + this.symbolOperation + this.expressionPartTwo)
+    },
+
+    deleteLastNumber() {
+      this.countResult = this.countResult.slice(0, -1)
+    },
+
+    countResultLength() {
+      return this.countResult.length > 6
+    },
+
+    maximumNumberLimit() {
+      console.log(this.countResult.length)
+      return this.countResult.length > this.maxNumberLimit
+    },
+
+    countPreviewLength() {
+      return this.countPreview.length
     }
   },
 
@@ -89,19 +112,32 @@ export default {
     //   if($event.key >= 0 && $event.key <= 9 || ['/','*','-','+','Enter','Backspace'].includes($event.key)) {
     //     console.log('teclado: ', $event.key)
     //   }
-
-    //   this.calculate()
     // },
-    captureClickOnScreen(keyClicked) {
-      if (this.cleanAllCalculator(keyClicked)) return
 
-      if (this.breakFirstSymbol(keyClicked)) return
+    captureClickOnScreen(keyClicked) {
+      if (this.cleanAllCalculator(keyClicked)) {
+        return
+      }
+
+      if (this.breakFirstSymbol(keyClicked)) {
+        return
+      }
+
+      if (this.breakMoreThanOneZero(keyClicked)) {
+        return
+      }
       
-      if (this.countResult?.length && this.breakLastSymbol(this.countResult.at(-1))) return
+      if (this.countResult?.length && this.breakLastSymbol(this.countResult.at(-1))) {
+        return
+      }
 
       if (keyClicked === 'deleteLast') {
-        this.countResult = this.countResult.slice(0, -1)
+        this.deleteLastNumber
         keyClicked = ''
+      }
+
+      if (this.maximumNumberLimit) {
+        return
       }
 
       this.countResult += keyClicked
@@ -127,7 +163,7 @@ export default {
       }
     },
 
-    calculateExpressionPartOne(keyClicked ) {
+    calculateExpressionPartOne(keyClicked) {
       const symbol = keyClicked
 
       this.expressionPartOne = Number(this.countResult.slice(0, -1))
@@ -142,6 +178,10 @@ export default {
       this.countPreview += this.countResult
       this.countResult = ''
       this.calculator
+    },
+
+    breakMoreThanOneZero(key) {
+      return this.countResult.length < 1 && Number(key) === 0
     },
 
     breakFirstSymbol(key) {
@@ -177,7 +217,7 @@ export default {
         text-align: end;
         gap: 16px 0;
 
-        .hint {
+        .preview {
           color: #9C9C9C;
           height: 47px;
           font-size: 40px;
@@ -189,6 +229,13 @@ export default {
           height: 96px;
           font-weight: 300;
           font-size: 96px;
+        }
+
+        .number-calc.decrease-size-numbers {
+          display: flex;
+          align-items: center;
+          flex-direction: row-reverse;
+          font-size: 58px;
         }
       }
       
